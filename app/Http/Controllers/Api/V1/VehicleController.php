@@ -8,6 +8,7 @@ use App\Http\Requests\StoreVehicleRequest;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
@@ -48,21 +49,39 @@ class VehicleController extends Controller
         ], 201);
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $vehicles = Vehicle::query()
+        $filters = $request->validate([
+            'make_id' => ['sometimes', 'required', 'integer', 'min:1'],
+            'vehicle_model_id' => ['sometimes', 'required', 'integer', 'min:1'],
+        ]);
+
+        $query = Vehicle::query()
             ->where('status', 'published')
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
             ->with([
-                'make',
-                'vehicleModel',
-                'dealer',
-            ])
-            ->latest('published_at')
-            ->paginate(12);
+                    'make',
+                    'vehicleModel',
+                    'dealer',
+            ]);
 
-        return response()->json($vehicles);
+            if (isset($filters['make_id'])) {
+                $query->where('make_id', $filters['make_id']);
+            }
+
+            if (isset($filters['vehicle_model_id'])) {
+                $query->where(
+                    'vehicle_model_id',
+                    $filters['vehicle_model_id']
+                );
+            }
+
+            $vehicles = $query
+                ->latest('published_at')
+                ->paginate(12);
+
+            return response()->json($vehicles);
     }
 
     public function show(string $slug): JsonResponse
