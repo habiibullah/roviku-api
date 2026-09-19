@@ -33,6 +33,11 @@ class Vehicle extends Model
         'location',
     ];
 
+    protected $attributes = [
+        'status' => 'draft',
+        'is_featured' => false,
+    ];
+
     protected function casts(): array
     {
         return [
