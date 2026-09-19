@@ -15,6 +15,9 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    Route::get('/vehicles', [VehicleController::class, 'index']);
+    Route::get('/vehicles/{slug}', [VehicleController::class, 'show']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/vehicles', [VehicleController::class, 'store']);
     });

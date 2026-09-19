@@ -47,4 +47,40 @@ class VehicleController extends Controller
             ]),
         ], 201);
     }
+
+    public function index(): JsonResponse
+    {
+        $vehicles = Vehicle::query()
+            ->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->with([
+                'make',
+                'vehicleModel',
+                'dealer',
+            ])
+            ->latest('published_at')
+            ->paginate(12);
+
+        return response()->json($vehicles);
+    }
+
+    public function show(string $slug): JsonResponse
+    {
+        $vehicle = Vehicle::query()
+            ->where('slug', $slug)
+            ->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->with([
+                'make',
+                'vehicleModel',
+                'dealer',
+            ])
+            ->firstOrFail();
+
+            return response()->json([
+                'vehicle' => $vehicle,
+            ]);
+    }
 }
